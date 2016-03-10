@@ -1,0 +1,37 @@
+{
+  "name": "bastion",
+  "version": "0.1.0",
+  "description": "Minimalistic web framework based on express and sequelize",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/akanieski/bastion.git"
+  },
+  "keywords": [
+    "sequelize",
+    "minimalistic",
+    "express",
+    "framework"
+  ],
+  "author": "Andrew Kanieski <andrew.legacy@gmail.com>",
+  "license": "https://www.tldrlegal.com/l/apache2",
+  "bugs": {
+    "url": "https://github.com/akanieski/bastion/issues"
+  },
+  "homepage": "https://github.com/akanieski/bastion",
+  "devDependencies": {
+    "gulp-cli": "^1.2.1"
+  },
+  "dependencies": {
+    "bluebird": "^3.3.3",
+    "body-parser": "^1.15.0",
+    "colors": "^1.1.2",
+    "express": "^4.13.4",
+    "js-array-extensions": "^1.0.8",
+    "lodash": "^4.6.1",
+    "tedious-promises": "git+https://github.com/akanieski/tedious-promises.git"
+  }
+}
