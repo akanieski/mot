@@ -26,7 +26,7 @@ module.exports = class ThroneService {
             })();
         });
     }
-    
+     
     getThrones() {
         return new Promise((resolve, reject) => {
             var service = this;
