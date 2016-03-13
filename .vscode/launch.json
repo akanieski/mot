@@ -16,7 +16,9 @@
 			],
 			"env": {
 				"NODE_ENV": "development",
-                "PORT": 4444
+                "PORT": 4444,
+                "TEST_URL": "http://127.0.0.1:4444",
+                "NODE_DEBUG": true
 			},
 			"externalConsole": false,
 			"sourceMaps": false,

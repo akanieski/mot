@@ -20,6 +20,16 @@ class BastionApp {
         
     }
     
+    log() {
+        (this.settings.logging.log || console.log).apply(this, arguments);
+    }
+    error() {
+        (this.settings.logging.error || console.error).apply(this, arguments);
+    }
+    debug() {
+        (this.settings.logging.debug || console.debug).apply(this, arguments);
+    }
+    
     db() {
         var tds = require('tedious-promises');
         return tds.setConnectionConfig(this.settings.database);

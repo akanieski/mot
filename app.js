@@ -45,13 +45,14 @@ console.log('                                                     ');
 
 app.listenAsync = bluebird.promisify(app.listen);
 
-bluebird.coroutine(function*(){
+module.exports = bluebird.coroutine(function*(done){
     /**
      * Setting up global for bastion
      */
     global.bastion = new BastionApp();
-    
+    let http = bastion.settings.ssl ? require('https') : require('http'); 
     let port = process.env.PORT || bastion.settings.port || 3000;
+    let sslOptions = bastion.settings.ssl;
     
     /**
      * Load up middleware and routes
@@ -94,8 +95,17 @@ bluebird.coroutine(function*(){
     bastion.cache = new BastionCache();
     
     
-    var server = yield app.listenAsync(port);
+    var server = (bastion.settings.ssl ? http.createServer(sslOptions, app) : http.createServer(app)).listen(port, function(){
+        let url = `${bastion.settings.ssl ? 'https' : 'http'}://127.0.0.1:${port}`;
+        bastion.log(`Server listening ${url}`);
+        if (done) done(url);
+    });
     
-    console.log(`Server listening on port ${port}`);
+    
+    
+    
+});
 
-})();
+if (!module.parent) {
+   module.exports();
+}

@@ -1,4 +1,4 @@
 module.exports = function*(req, res, next) {
-    console.log("Request Received");
+    bastion.log("Request Received");
     next();
 }

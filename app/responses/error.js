@@ -1,6 +1,6 @@
 module.exports = function*(data) {
-    bastion.log('ok');
+    console.log('error');
     this
-        .status(200)
+        .status(500)
         .send(data);
 }

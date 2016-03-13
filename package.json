@@ -2,9 +2,11 @@
   "name": "bastion",
   "version": "0.1.0",
   "description": "Minimalistic web framework based on express and sequelize",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha tests --timeout 10000",
+    "pretest": "node ./tasks/initDb",
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
@@ -23,14 +25,21 @@
   },
   "homepage": "https://github.com/akanieski/bastion",
   "devDependencies": {
-    "gulp-cli": "^1.2.1"
+    "assert": "^1.3.0",
+    "ejs": "^2.4.1",
+    "gulp-cli": "^1.2.1",
+    "mocha": "^2.4.5",
+    "mocha-generators": "^1.2.0",
+    "request-promise": "^2.0.1"
   },
   "dependencies": {
+    "bcryptjs": "^2.3.0",
     "bluebird": "^3.3.3",
     "body-parser": "^1.15.0",
     "colors": "^1.1.2",
     "express": "^4.13.4",
     "js-array-extensions": "^1.0.8",
+    "jsonwebtoken": "^5.7.0",
     "lodash": "^4.6.1",
     "tedious-promises": "git+https://github.com/akanieski/tedious-promises.git"
   }

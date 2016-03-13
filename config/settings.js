@@ -1,6 +1,7 @@
 module.exports = {
-    database: {
-        dialect: 'sqlite',
-        storage: './bastion.sqlite'
+    logging: {
+        log: console.log,
+        error: console.error,
+        debug: console.debug
     }
 };
