@@ -23,7 +23,10 @@ module.exports = {
         action: function*(req, res, next) {
             let throneService = new ThroneService(bastion.db());
 
-            res.ok(yield throneService.getThronesInViscinity(req.params.latitude, req.params.longitude));
+            res.ok({
+              success: true,
+              data: yield throneService.getThronesInViscinity(req.params.latitude, req.params.longitude)
+            });
 
         }
     }
