@@ -65,6 +65,98 @@ define({ "api": [
     "groupTitle": "Auth"
   },
   {
+    "type": "post",
+    "url": "/api/thrones/",
+    "title": "Create Throne",
+    "version": "0.1.0",
+    "name": "CreateThrone",
+    "group": "Thrones",
+    "description": "<p>Create throne</p>",
+    "header": {
+      "fields": {
+        "Authentication": [
+          {
+            "group": "Authentication",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Javascript Web Token content generated during authentication</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Headers",
+          "content": "Authorization: Bearer eyJ.eyJVfQ.zjaDVwNZB ...",
+          "type": "String"
+        }
+      ]
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "Name",
+            "description": "<p>Name of the throne</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Float",
+            "optional": false,
+            "field": "Latitude",
+            "description": "<p>Latitude of the throne</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Float",
+            "optional": false,
+            "field": "Longitude",
+            "description": "<p>Longitude of the throne</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Integer",
+            "optional": false,
+            "field": "CategoryId",
+            "description": "<p>Category ID of the throne</p>"
+          }
+        ]
+      }
+    },
+    "examples": [
+      {
+        "title": "Example usage:",
+        "content": "POST http://localhost/api/thrones\n{\n  \"Name\": \"My Neighbor's Outhouse\",\n  \"Latitude\": 42.2335132,\n  \"Latitude\": -75.2657466,\n  \"CategoryId\": 1,\n}",
+        "type": "json"
+      }
+    ],
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "data",
+            "description": "<p>Requested throne data</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "boolean",
+            "optional": false,
+            "field": "success",
+            "description": "<p>Whether or not query was successful</p>"
+          }
+        ]
+      }
+    },
+    "filename": "app/controllers/thrones.js",
+    "groupTitle": "Thrones"
+  },
+  {
     "type": "get",
     "url": "/api/thrones/{Id}",
     "title": "Get Throne Details",
@@ -159,6 +251,105 @@ define({ "api": [
             "optional": false,
             "field": "data",
             "description": "<p>List of Thrones (Array of Objects).</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "boolean",
+            "optional": false,
+            "field": "success",
+            "description": "<p>Whether or not query was successful</p>"
+          }
+        ]
+      }
+    },
+    "filename": "app/controllers/thrones.js",
+    "groupTitle": "Thrones"
+  },
+  {
+    "type": "put",
+    "url": "/api/thrones/1",
+    "title": "Update Throne",
+    "version": "0.1.0",
+    "name": "UpdateThrone",
+    "group": "Thrones",
+    "description": "<p>Update throne</p>",
+    "header": {
+      "fields": {
+        "Authentication": [
+          {
+            "group": "Authentication",
+            "type": "String",
+            "optional": false,
+            "field": "Authorization",
+            "description": "<p>Javascript Web Token content generated during authentication</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Headers",
+          "content": "Authorization: Bearer eyJ.eyJVfQ.zjaDVwNZB ...",
+          "type": "String"
+        }
+      ]
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Integer",
+            "optional": false,
+            "field": "Id",
+            "description": "<p>Unique Id of existing throne</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "Name",
+            "description": "<p>Name of the throne</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Float",
+            "optional": false,
+            "field": "Latitude",
+            "description": "<p>Latitude of the throne</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Float",
+            "optional": false,
+            "field": "Longitude",
+            "description": "<p>Longitude of the throne</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Integer",
+            "optional": false,
+            "field": "CategoryId",
+            "description": "<p>Category ID of the throne</p>"
+          }
+        ]
+      }
+    },
+    "examples": [
+      {
+        "title": "Example usage:",
+        "content": "POST http://localhost/api/thrones\n{\n  \"Id\": 1\n  \"Name\": \"My Neighbor's Outhouse\",\n  \"Latitude\": 42.2335132,\n  \"Latitude\": -75.2657466,\n  \"CategoryId\": 1,\n}",
+        "type": "json"
+      }
+    ],
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "data",
+            "description": "<p>Requested throne data</p>"
           },
           {
             "group": "Success 200",

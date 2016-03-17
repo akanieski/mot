@@ -8,12 +8,17 @@ module.exports = {
 
     requestLogger: require('../app/middleware/requestLogger'),
 
+    authenticate: require('../app/middleware/authenticate'),
+
+    secure: require('../app/middleware/secure'),
+
     setup: [
         '*urlencode',
         '*json',
         'requestLogger',
         'attachResponses',
         'router'
-    ]
+    ],
+
 
 }

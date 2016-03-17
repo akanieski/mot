@@ -126,7 +126,7 @@ module.exports = class UserService {
                 } else {
                     let salt = yield bcrypt.genSaltAsync(10);
                     user.Password = yield bcrypt.hashAsync(user.Password, salt);
-                    // INSERT
+                    // UPDATE
                     user = (yield service.db
                         .sql(`
                             UPDATE DBO.[USERS] SET

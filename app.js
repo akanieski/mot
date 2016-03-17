@@ -53,6 +53,7 @@ module.exports = bluebird.coroutine(function*(done){
      * Setting up global for bastion
      */
     global.bastion = new BastionApp();
+    console.log('Bastion server configured ..');
     let http = bastion.settings.ssl ? require('https') : require('http');
     let port = process.env.PORT || bastion.settings.port || 3000;
     let sslOptions = bastion.settings.ssl;
@@ -60,10 +61,10 @@ module.exports = bluebird.coroutine(function*(done){
     /**
      * Load up middleware and routes
      */
-    var middlewareConfig = require(path.join(cwd, 'config/middleware.js'));
-    middlewareConfig.setup.forEach(function(func){
+    bastion.middleware = require(path.join(cwd, 'config/middleware.js'));
+    bastion.middleware.setup.forEach(function(func){
         if (func.indexOf('*') > -1) {
-            app.use(middlewareConfig[func.replace('*','')]);
+            app.use(bastion.middleware[func.replace('*','')]);
         } else if (func == 'router') {
             bastion.routes = require('./config/routes');
             Object.keys(bastion.routes).forEach(function(key){
@@ -74,25 +75,27 @@ module.exports = bluebird.coroutine(function*(done){
                     let routePath = key.split(' ')[1];
                     let actionConfig = require(`./app/controllers/${controllerPath}`)[controllerAction];
                     let actionFunc = actionConfig.action;
+
+                    // Mixin the config into the request for later middleware use
                     app[routeMethod.toLowerCase()](routePath, function(req, res, next){
                        req.config = actionConfig;
-
-                       // block requests coming from insecure sources
-                       if (actionConfig.secure && !req.secure) {
-                           res.status(401).send();
-                           return;
-                       }
-
                        next();
                     });
+
+                    // Register middleware needed for the give route based on config
+                    (actionConfig.middleware || []).forEach(function(middleware){
+                        app[routeMethod.toLowerCase()](routePath, middleware);
+                    });
+
                     app[routeMethod.toLowerCase()](routePath, bluebird.coroutine(actionFunc));
                 }
             });
         } else {
-            app.use(bluebird.coroutine(middlewareConfig[func]));
+            app.use(bluebird.coroutine(bastion.middleware[func]));
         }
         app.use('/docs', express.static('docs'));
     });
+    console.log('Middleware configured ..');
 
 
 
@@ -110,6 +113,6 @@ module.exports = bluebird.coroutine(function*(done){
 
 });
 
-if (!module.parent) {
+if (!module.parent || module.parent.id === '.') {
    module.exports();
 }

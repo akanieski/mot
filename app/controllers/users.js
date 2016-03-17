@@ -27,7 +27,6 @@ module.exports = {
      * @apiSuccess {Boolean} success    Whether or not query was successful
      */
     signup: {
-        secure: false,
         action: function* (req, res, next) {
             bb.coroutine(function* () {
                 let svc = new UserService(bastion.db());
@@ -77,7 +76,6 @@ module.exports = {
      * @apiSuccess {Boolean} success    Whether or not query was successful
      */
     basicAuthentication: {
-        secure: false,
         action: function* (req, res, next) {
             bb.coroutine(function* () {
                 let svc = new UserService(bastion.db());
