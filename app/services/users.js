@@ -9,6 +9,7 @@ const InvalidModelError =       require('../errors/InvalidModel');
 const os =                      require('os');
 const jwt =                     require('jsonwebtoken');
 const InvalidCredentialsError = require('../errors/InvalidCredentials');
+const ResourceNotFoundError =   require('../errors/ResourceNotFound');
 
 module.exports = class UserService {
 
@@ -16,11 +17,11 @@ module.exports = class UserService {
         this.db = dbContext;
     }
 
-    generateToken(user) {
+    generateToken(user, type) {
         let payload = this.mold(user).toJSON()
         return new Promise((resolve, reject) => {
             jwt.sign(payload, bastion.settings.secret, {
-                subject: "authentication",
+                subject: type,
                 issuer: os.hostname()
             }, function(token) {
                 resolve(token);
@@ -238,7 +239,7 @@ module.exports = class UserService {
                     }
                     var result = yield bcrypt.compareAsync(password, user.Password);
                     if (result) {
-                        return resolve(yield service.generateToken(user))
+                        return resolve(yield service.generateToken(user, 'authentication'))
                     } else {
                         return reject(new InvalidCredentialsError("Invalid credentials"));
                     }
@@ -247,6 +248,32 @@ module.exports = class UserService {
                 }
             })();
         });
+    }
+
+    beginPasswordReset(seed) {
+        let svc = this;
+        return new Promise(function(resolve, reject) { bb.coroutine(function*(){
+            try {
+                let user = yield svc.getUserByUsernameOrEmail(seed)
+
+                if (!user)
+                    return reject(new ResourceNotFoundError(`Unknown user ${seed}`))
+
+                let token = yield svc.generateToken(user, 'passwordReset')
+
+                let config = {
+                    to: user.Email,
+                    from: bastion.settings.email.fromAddress,
+                    subject: "Map of Thrones - Password Reset Request"
+                }
+                let data = {
+                    passwordResetUrl: `${bastion.settings.passwordResetEndpoint}?token=${token}`
+                }
+                let msg = yield svc.emailService.send('passwordReset', config, data)
+            } catch (err) {
+                reject(err);
+            }
+        })()});
     }
 
 

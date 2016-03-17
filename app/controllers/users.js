@@ -32,7 +32,7 @@ module.exports = {
                 let svc = new UserService(bastion.db());
                 try {
                     let user = yield svc.saveUser(req.body);
-                    let token = yield svc.generateToken(user);
+                    let token = yield svc.generateToken(user, 'authentication');
                     res.ok({
                         user: user.toJSON(),
                         token: token,
