@@ -3,10 +3,10 @@ const ThroneService = require('../services/thrones');
 
 module.exports = {
   /**
-  * @api {get} /api/thrones Read data of a User
+  * @api {get} /api/thrones/{latitude}/{longitude}
   * @apiVersion 0.1.0
   * @apiName GetThrones
-  * @apiGroup Throne
+  * @apiGroup Thrones
   *
   * @apiDescription List thrones by geographic location
   *
@@ -16,7 +16,8 @@ module.exports = {
   * @apiExample Example usage:
   * curl -i http://localhost/api/thrones/47.1326132/-75.66623416
   *
-  * @apiSuccess {Object[]} options       List of Thrones (Array of Objects).
+  * @apiSuccess {Object[]} data       List of Thrones (Array of Objects).
+  * @apiSuccess {boolean} success     Whether or not query was successful
   */
     list: {
         secure: false,
