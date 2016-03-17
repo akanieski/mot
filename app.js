@@ -15,34 +15,37 @@ var path = require("path");
 var cwd = path.resolve(process.cwd());
 var BastionApp = require(path.join(cwd, 'app/index'));
 
-console.log('                                                     ');
-console.log('                                                     ');
-console.log('                           |=>                       ');
-console.log('                           |                         ');
-console.log('                           X                         ');
-console.log('                 |=>      / \\      |=>              ');
-console.log('                 |      =======    |                 ');
-console.log('                 X      | .:  |    X                 ');
-console.log('                / \\     | O   |   / \\              ');
-console.log('               =====    |:  . |  =====               ');
-console.log('               |.: |__| .   : |__| :.|               ');
-console.log('               |  :|. :  ...   : |.  |               ');
-console.log('           __   __W| .    .  ||| .      :|W__  --    ');
-console.log('     -- __  W  WWWW______"""______WWWW   W -----  -- ');
-console.log(' -  -     ___  ---    ____     ____----       --__  -');
-console.log('    --__    --    --__     -___        __-   _       ');
-console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
-console.log('     ____   ___    _____ ______ ____ ____   _   __   '.cyan);
-console.log('    / __ ) /   |  / ___//_  __//  _// __ \\ / | / /  '.cyan);
-console.log('   / __  |/ /| |  \\__ \\  / /   / / / / / //  |/ /  '.cyan); 
-console.log('  / /_/ // ___ | ___/ / / /  _/ / / /_/ // /|  /     '.cyan);
-console.log(' /_____//_/  |_|/____/ /_/  /___/ \\____//_/ |_/     '.cyan);
-console.log('                                                     '.cyan);  
-console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
-console.log('                                                     ');
-console.log('Bastion server is starting up ..                     ');
-console.log('                                                     ');
-
+console.log("                    _____						");
+console.log("                   /      \\						");
+console.log("                  (____/\\  )						");
+console.log("                   |___  U?(____					");
+console.log("                   _\\L.   |      \\     ___		");
+console.log("                 / /'''\\ /.-'     |   |\\  |		");
+console.log("                ( /  _/u     |    \\___|_)_|		");
+console.log("                 \\|  \\\\      /   / \\_(___ __)	");
+console.log("                  |   \\\\    /   /  |  |    |		");
+console.log("                  |    )  _/   /   )  |    |		");
+console.log("                  _\\__/.-'    /___(   |    |		");
+console.log("               _/  __________/     \\  |    |		");
+console.log("              //  /  (              ) |    |		");
+console.log("             ( \\__|___\\    \\______ /__|____|		");
+console.log("              \\    (___\\   |______)_/			");
+console.log("               \\   |\\   \\  \\     /				");
+console.log("                \\  | \\__ )  )___/				");
+console.log("                 \\  \\  )/  /__(       			");
+console.log("             ___ |  /_//___|   \\_________		");
+console.log("               _/  ( / OUuuu    \\				");
+console.log("              `----'(____________)				");
+console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+console.log('                             __   _____ _   ');
+console.log('  /\\/\\   __ _ _ __     ___  / _| /__   \\ |__  _ __ ___  _ __   ___  ___  ');
+console.log(' /    \\ / _` | |_ \\   / _ \\| |_    / /\\/ |_ \\| |__/ _ \\| |_ \\ / _ \\/ __| ');
+console.log('/ /\\/\\ \\ (_| | |_) | | (_) |  _|  / /  | | | | | | (_) | | | |  __/\\__ \\ ');
+console.log('\\/    \\/\\__,_| .__/   \\___/|_|    \\/   |_| |_|_|  \\___/|_| |_|\\___||___/ ');
+console.log('           |_|  ');
+console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+console.log('');
+console.log('Server is starting up ..                     ');
 app.listenAsync = bluebird.promisify(app.listen);
 
 module.exports = bluebird.coroutine(function*(done){
@@ -50,16 +53,16 @@ module.exports = bluebird.coroutine(function*(done){
      * Setting up global for bastion
      */
     global.bastion = new BastionApp();
-    let http = bastion.settings.ssl ? require('https') : require('http'); 
+    let http = bastion.settings.ssl ? require('https') : require('http');
     let port = process.env.PORT || bastion.settings.port || 3000;
     let sslOptions = bastion.settings.ssl;
-    
+
     /**
      * Load up middleware and routes
      */
     var middlewareConfig = require(path.join(cwd, 'config/middleware.js'));
     middlewareConfig.setup.forEach(function(func){
-        if (func.indexOf('*') > -1) { 
+        if (func.indexOf('*') > -1) {
             app.use(middlewareConfig[func.replace('*','')]);
         } else if (func == 'router') {
             bastion.routes = require('./config/routes');
@@ -73,37 +76,37 @@ module.exports = bluebird.coroutine(function*(done){
                     let actionFunc = actionConfig.action;
                     app[routeMethod.toLowerCase()](routePath, function(req, res, next){
                        req.config = actionConfig;
-                       
+
                        // block requests coming from insecure sources
                        if (actionConfig.secure && !req.secure) {
                            res.status(401).send();
                            return;
                        }
-                       
+
                        next();
                     });
                     app[routeMethod.toLowerCase()](routePath, bluebird.coroutine(actionFunc));
-                } 
+                }
             });
-        } else { 
+        } else {
             app.use(bluebird.coroutine(middlewareConfig[func]));
         }
     });
 
-    
-    
+
+
     bastion.cache = new BastionCache();
-    
-    
+
+
     var server = (bastion.settings.ssl ? http.createServer(sslOptions, app) : http.createServer(app)).listen(port, function(){
         let url = `${bastion.settings.ssl ? 'https' : 'http'}://127.0.0.1:${port}`;
         bastion.log(`Server listening ${url}`);
         if (done) done(url);
     });
-    
-    
-    
-    
+
+
+
+
 });
 
 if (!module.parent) {
