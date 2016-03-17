@@ -2,3 +2,4 @@ node_modules
 config/local-settings.js
 .tmp
 npm-debug.log
+certs

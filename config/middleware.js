@@ -13,6 +13,7 @@ module.exports = {
     secure: require('../app/middleware/secure'),
 
     setup: [
+        'secure',
         '*urlencode',
         '*json',
         'requestLogger',
