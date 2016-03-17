@@ -1,20 +1,21 @@
 'use strict'
 
-const bcrypt =              bb.promisifyAll(require('bcryptjs'));
-const DbTypes =             require('tedious').TYPES;
-const EmailRegexp =         /^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i;
-const UsernameRegexp =      /^[a-z0-9_\-.]{3,25}$/;
-const PasswordRegexp =      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$/;
-const InvalidModelError =   require('../errors/InvalidModel');
-const os =                  require('os');
-const jwt =                 require('jsonwebtoken');
+const bcrypt =                  bb.promisifyAll(require('bcryptjs'));
+const DbTypes =                 require('tedious').TYPES;
+const EmailRegexp =             /^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,5})?$/i;
+const UsernameRegexp =          /^[a-z0-9_\-.]{3,25}$/;
+const PasswordRegexp =          /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$/;
+const InvalidModelError =       require('../errors/InvalidModel');
+const os =                      require('os');
+const jwt =                     require('jsonwebtoken');
+const InvalidCredentialsError = require('../errors/InvalidCredentials');
 
 module.exports = class UserService {
-    
+
     constructor(dbContext) {
         this.db = dbContext;
     }
-    
+
     generateToken(user) {
         let payload = this.mold(user).toJSON()
         return new Promise((resolve, reject) => {
@@ -26,7 +27,7 @@ module.exports = class UserService {
             });
         })
     }
-    
+
     validateUser(_user) {
         var user = Object.assign({}, _user),
             service = this;
@@ -36,14 +37,14 @@ module.exports = class UserService {
                     errored = false,
                     result = (yield service.db
                         .sql(`
-                            SELECT 
+                            SELECT
                                 [EmailInUse] = (SELECT COUNT(*) FROM DBO.[USERS] WHERE [EMAIL] = @email),
                                 [UsernameInUse] = (SELECT COUNT(*) FROM DBO.[USERS] WHERE [USERNAME] = @username)
                             ;`)
                         .parameter('email', DbTypes.VarChar, user.Email)
                         .parameter('username', DbTypes.VarChar, user.Username)
                         .execute())[0];
-                    
+
                 if (!_user.Id && result.EmailInUse) {
                     errors.Email = 'Email address already in use in our systems';
                     errored = true;
@@ -61,14 +62,14 @@ module.exports = class UserService {
                     errored = true;
                 }
                 if (user.Id) { // Existing user
-                    
+
                     if (user.PasswordConfirmation && user.PasswordConfirmation != !user.Password) {
                         errors.Password = 'Password provided must be a minimum 8 characters with at least 1 letter, 1 number and 1 special character';
                         errored = true;
                     } else {
                         delete user.Password;
                     }
-                    
+
                 } else { // New user
                     if (!user.Password || !PasswordRegexp.test(user.Password)) {
                         errors.Password = 'Password provided must be a minimum 8 characters with at least 1 letter, 1 number and 1 special character';
@@ -79,16 +80,16 @@ module.exports = class UserService {
                         errored = true;
                     }
                 }
-                
+
                 // Resolve with a set of errors
                 resolve(errored ? errors : null);
-                
+
             } catch (err) {
                 reject(err); // Reject with catastrophic issues
             }
         })()});
     }
-    
+
     mold(user) {
         return Object.assign(user, {
             toJSON: function() {
@@ -97,10 +98,10 @@ module.exports = class UserService {
                     Email: this.Email,
                     Id: this.Id
                 };
-            } 
+            }
         });
     }
-    
+
     saveUser(_user) {
         var user = Object.assign({}, _user),
             service = this;
@@ -108,14 +109,14 @@ module.exports = class UserService {
             try {
                 var errors = yield service.validateUser(user);
                 if (errors) throw new InvalidModelError('Errors found in user data', errors);
-                
+
                 if (!user.Id) {
                     user.Password = yield bcrypt.hashAsync(user.Password, yield bcrypt.genSaltAsync(10));
                     // INSERT
                     user = (yield service.db
                         .sql(`
-                            INSERT INTO DBO.[USERS] 
-                                ([EMAIL], [USERNAME], [PASSWORD]) 
+                            INSERT INTO DBO.[USERS]
+                                ([EMAIL], [USERNAME], [PASSWORD])
                             OUTPUT INSERTED.*
                             VALUES (@email, @username, @password);`)
                         .parameter('email', DbTypes.VarChar, user.Email)
@@ -129,9 +130,9 @@ module.exports = class UserService {
                     user = (yield service.db
                         .sql(`
                             UPDATE DBO.[USERS] SET
-                                [EMAIL] = @email, 
+                                [EMAIL] = @email,
                                 [USERNAME] = @username
-                                [PASSWORD] = CASE WHEN @password IS NULL THEN [PASSWORD] ELSE @password END 
+                                [PASSWORD] = CASE WHEN @password IS NULL THEN [PASSWORD] ELSE @password END
                             OUTPUT INSERTED.*
                             WHERE [ID] = @ID;`)
                         .parameter('email', DbTypes.VarChar, user.email)
@@ -145,42 +146,108 @@ module.exports = class UserService {
             }
         })()});
     }
-    
+
     getUserById(id) {
         return new Promise((resolve, reject) => {
             var service = this;
             bb.coroutine(function*(){
                 try {
-                    var user = (yield service.db.sql(`select [users].* from dbo.[users] where [users].id = ${id}`).execute()).firstOrDefault();
-                    
+                    var user = (yield service.db.sql(`select [users].* from dbo.[users] where [users].id = @id`)
+                        .parameter("id", TYPES.Integer, id)
+                        .execute()).firstOrDefault();
+
                     // load other user information here
-                    
-                    return resolve(service.mold(user));
-                    
+
+                    return resolve(user ? service.mold(user) : null);
+
                 } catch (err) {
                     return reject(err);
                 }
             })();
         });
     }
-    
+
     getUserByUsername(username) {
         return new Promise((resolve, reject) => {
             var service = this;
             bb.coroutine(function*(){
                 try {
-                    var user = (yield service.db.sql(`select [users].* from dbo.[users] where [users].username = ${username}`).execute()).firstOrDefault();
-                    
+                    var user = (yield service.db.sql(`select [users].* from dbo.[users] where [users].username = @username`)
+                        .parameter("username", DbTypes.VarChar, username)
+                        .execute()).firstOrDefault();
+
                     // load other user information here
-                    
-                    return resolve(service.mold(user));
-                    
+
+                    return resolve(user ? service.mold(user) : null);
+
                 } catch (err) {
                     return reject(err);
                 }
             })();
         });
     }
-    
-    
+
+    getUserByEmail(email) {
+        return new Promise((resolve, reject) => {
+            var service = this;
+            bb.coroutine(function*(){
+                try {
+                    var user = (yield service.db.sql(`select [users].* from dbo.[users] where [users].email = @email`)
+                        .parameter("email", DbTypes.VarChar, email)
+                        .execute()).firstOrDefault();
+
+                    // load other user information here
+
+                    return resolve(user ? service.mold(user) : null);
+
+                } catch (err) {
+                    return reject(err);
+                }
+            })();
+        });
+    }
+
+    getUserByUsernameOrEmail(seed) {
+        return new Promise((resolve, reject) => {
+            var service = this;
+            bb.coroutine(function*(){
+                try {
+                    var user = (yield service.db.sql(`select [users].* from dbo.[users] where [users].email = @seed or [users].username = @seed`)
+                        .parameter("seed", DbTypes.VarChar, seed)
+                        .execute()).firstOrDefault();
+
+                    // load other user information here
+
+                    return resolve(user ? service.mold(user) : null);
+
+                } catch (err) {
+                    return reject(err);
+                }
+            })();
+        });
+    }
+
+    authenticate(seed, password) {
+        return new Promise((resolve, reject) => {
+            var service = this;
+            bb.coroutine(function*(){
+                try {
+                    var user = yield service.getUserByUsernameOrEmail(seed);
+                    if (!user) {
+                        return reject(new InvalidCredentialsError("Invalid credentials"));
+                    }
+                    var result = yield bcrypt.compareAsync(password, user.Password);
+                    if (result) {
+                        return resolve(yield service.generateToken(user))
+                    } else {
+                        return reject(new InvalidCredentialsError("Invalid credentials"));
+                    }
+                } catch (err) {
+                    return reject(err);
+                }
+            })();
+        });
+    }
+
+
 }

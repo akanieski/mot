@@ -1,7 +1,7 @@
 {
-  "name": "bastion",
+  "name": "MapOfThrones",
   "version": "0.1.0",
-  "description": "Minimalistic web framework based on express and sequelize",
+  "description": "Map of thrones backend service",
   "main": "app.js",
   "scripts": {
     "test": "mocha tests --timeout 10000",

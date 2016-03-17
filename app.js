@@ -91,6 +91,7 @@ module.exports = bluebird.coroutine(function*(done){
         } else {
             app.use(bluebird.coroutine(middlewareConfig[func]));
         }
+        app.use('/docs', express.static('docs'));
     });
 
 

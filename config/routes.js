@@ -1,5 +1,7 @@
 module.exports = {
     'GET /bastion/info': 'system.info',
     'GET /api/thrones/:latitude/:longitude': 'thrones.list',
-    'POST /api/user': 'users.signup'
+    'GET /api/thrones/:Id': 'thrones.get',
+    'POST /api/user': 'users.signup',
+    'POST /api/auth/basic': 'users.basicAuthentication'
 }
