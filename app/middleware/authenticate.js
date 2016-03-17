@@ -8,6 +8,7 @@ const InvalidCredentialsError = require('../errors/InvalidCredentials');
  */
 module.exports = bb.coroutine(function*(req, res, next) {
     try {
+        bastion.log("Checking authorization token..");
         // Missing the Authorization header
         if (!(req.headers.Authorization || req.headers.authorization))
             return res.error(new InvalidCredentialsError("Authentication token not provided"), 401);

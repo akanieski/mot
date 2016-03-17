@@ -17,6 +17,8 @@ describe("Thones api", function() {
             if (err.statusCode == 500) {
                 console.log(err)
                 throw err
+            } else {
+                console.log(err);
             }
         }
         assert.equal(result.statusCode, 200, "must return status code 200")
